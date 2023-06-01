@@ -7,6 +7,17 @@ let kittens = []
  * Then reset the form
  */
 function addKitten(event) {
+  event.preventDefault()
+  form = event.target
+
+  let kitten = {
+    id: generateId(),
+    name: form.name.value
+  }
+
+  kittens.push(kitten)
+  saveKittens()
+  form.reset()
 }
 
 /**
@@ -14,6 +25,8 @@ function addKitten(event) {
  * Saves the string to localstorage at the key kittens 
  */
 function saveKittens() {
+  window.localStorage.setItem("kittens", JSON.stringify(kittens))
+  drawKittens()
 }
 
 /**
@@ -22,6 +35,11 @@ function saveKittens() {
  * the kittens array to the retrieved array
  */
 function loadKittens() {
+  storedKittens = window.localStorage.getItem("kittens")
+  storedKittens = JSON.parse(storedKittens)
+  if (storedKittens) {
+    kittens = storedKittens
+  }
 }
 
 /**
@@ -37,6 +55,7 @@ function drawKittens() {
  * @return {Kitten}
  */
 function findKittenById(id) {
+  return kittens.findIndex(kittens => kittens.id === id)
 }
 
 
@@ -49,6 +68,13 @@ function findKittenById(id) {
  * @param {string} id 
  */
 function pet(id) {
+  foundKitten = findKittenById(id)
+  randNum = Math.random()
+  if (randNum > .5) {
+    foundKitten.affection++
+  } else {
+    foundKitten.affection--
+  }
 }
 
 /**
@@ -58,6 +84,9 @@ function pet(id) {
  * @param {string} id
  */
 function catnip(id) {
+  foundKitten = findKittenById(id)
+  foundKitten.mood = 'tolerant'
+  foundKitten.affection = 5
 }
 
 /**
@@ -65,13 +94,35 @@ function catnip(id) {
  * @param {Kitten} kitten 
  */
 function setKittenMood(kitten) {
+  affect = kitten.affection
+  mood = kitten.mood
+  if (affect > 2 && affect < 8) {
+    switch (kitten.affection) {
+      case 3:
+        mood = 'mad'
+      case 4:
+        mood = 'bitter'
+      case 5:
+        mood = 'tolerant'
+      case 6:
+        mood = 'content'
+      case 7:
+        mood = 'happy'
+    }
+  } else if(affect <= 2){
+    mood = 'angry'
+  } else{
+    mood = 'elated'
+  }
 }
 
 /**
  * Removes all of the kittens from the array
  * remember to save this change
  */
-function clearKittens(){
+function clearKittens() {
+  kittens = []
+  saveKittens()
 }
 
 /**
@@ -81,6 +132,7 @@ function clearKittens(){
 function getStarted() {
   document.getElementById("welcome").remove();
   console.log('Good Luck, Take it away')
+  drawKittens()
 }
 
 
@@ -102,3 +154,4 @@ function generateId() {
 }
 
 loadKittens();
+pet();
