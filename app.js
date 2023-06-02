@@ -12,11 +12,20 @@ function addKitten(event) {
 
   let kitten = {
     id: generateId(),
-    name: form.name.value
+    name: form.name.value,
+    affection: 5,
+    mood: 'tolerant'
   }
-
-  kittens.push(kitten)
-  saveKittens()
+  let inKittens = false
+  for (i = 0; i < kittens.length; i++) {
+    if (kittens[i].name == kitten.name) {
+      inKittens = true
+    }
+  }
+  if (inKittens == false) {
+    kittens.push(kitten)
+    saveKittens()
+  }
   form.reset()
 }
 
@@ -39,6 +48,7 @@ function loadKittens() {
   storedKittens = JSON.parse(storedKittens)
   if (storedKittens) {
     kittens = storedKittens
+    getStarted()
   }
 }
 
@@ -46,6 +56,24 @@ function loadKittens() {
  * Draw all of the kittens to the kittens element
  */
 function drawKittens() {
+  let drawnCats = document.getElementById("kittens")
+  drawnCats.innerHTML = ''
+  kittens.forEach(kitten => {
+    drawnCats.innerHTML += `
+    <div class="kitten">
+      <div class="card text-center kitten ${kitten.mood}">
+        <h3>${kitten.name}</h3>
+        <img src="catcard.webp" width="300" alt="cat">
+          <div>
+            <h5>mood: ${kitten.mood}</h5>
+            <button onclick="pet('${kitten.id}')">pet</button>
+            <button onclick="catnip('${kitten.id}')">catnip</button>
+          </div>
+      </div>
+      <button class="btn-cancel" onclick="removeKitten('${kitten.id}')">Delete</button>
+    </div>
+    `
+  })
 }
 
 
@@ -55,7 +83,12 @@ function drawKittens() {
  * @return {Kitten}
  */
 function findKittenById(id) {
-  return kittens.findIndex(kittens => kittens.id === id)
+  let foundKitten = {}
+  for (i = 0; i < kittens.length; i++) {
+    if (kittens[i].id == id) {
+      return kittens[i];
+    }
+  }
 }
 
 
@@ -68,13 +101,14 @@ function findKittenById(id) {
  * @param {string} id 
  */
 function pet(id) {
-  foundKitten = findKittenById(id)
-  randNum = Math.random()
+  let foundKitten = findKittenById(id);
+  randNum = Math.random();
   if (randNum > .5) {
-    foundKitten.affection++
+    foundKitten.affection++;
   } else {
-    foundKitten.affection--
+    foundKitten.affection--;
   }
+  setKittenMood(foundKitten)
 }
 
 /**
@@ -84,9 +118,9 @@ function pet(id) {
  * @param {string} id
  */
 function catnip(id) {
-  foundKitten = findKittenById(id)
-  foundKitten.mood = 'tolerant'
-  foundKitten.affection = 5
+  foundKitten = findKittenById(id);
+  foundKitten.affection = 5;
+  setKittenMood(foundKitten)
 }
 
 /**
@@ -94,28 +128,28 @@ function catnip(id) {
  * @param {Kitten} kitten 
  */
 function setKittenMood(kitten) {
-  affect = kitten.affection
-  mood = kitten.mood
-  if (affect > 2 && affect < 8) {
-    switch (kitten.affection) {
-      case 3:
-        mood = 'mad'
-      case 4:
-        mood = 'bitter'
-      case 5:
-        mood = 'tolerant'
-      case 6:
-        mood = 'content'
-      case 7:
-        mood = 'happy'
-    }
-  } else if(affect <= 2){
-    mood = 'angry'
-  } else{
-    mood = 'elated'
+  let affect = kitten.affection;
+  if (affect < 5 && affect > 3) {
+    kitten.mood = 'angry'
+  } else if (affect <= 3) {
+    kitten.mood = 'gone'
+  } else if (affect > 5) {
+    kitten.mood = 'happy'
+  } else {
+    kitten.mood = 'tolerant'
   }
+  saveKittens()
 }
 
+/**
+ * Removes a kitten from the array
+ * @param {string} id
+ */
+function removeKitten(id) {
+  let index = kittens.findIndex(kitten => kitten.id === id);
+  kittens.splice(index,1)
+  saveKittens()
+}
 /**
  * Removes all of the kittens from the array
  * remember to save this change
@@ -131,7 +165,6 @@ function clearKittens() {
  */
 function getStarted() {
   document.getElementById("welcome").remove();
-  console.log('Good Luck, Take it away')
   drawKittens()
 }
 
@@ -154,4 +187,3 @@ function generateId() {
 }
 
 loadKittens();
-pet();
